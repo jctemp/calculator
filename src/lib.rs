@@ -1,8 +1,13 @@
-use std::str::FromStr;
-
 use pest::Parser;
 use pest_derive::Parser;
+use std::str::FromStr;
 use wasm_bindgen::prelude::*;
+
+// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+// allocator.
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 #[derive(Parser)]
@@ -38,6 +43,9 @@ impl FromStr for Operator {
 
 #[wasm_bindgen]
 pub fn test(input: &str) -> f64 {
+    wasm_logger::init(wasm_logger::Config::default());
+    log::info!("Hi, mom!");
+
     let expression = ArithmeticParser::parse(Rule::expression, input)
         .expect("Expression should be parsable.")
         .into_iter()
@@ -75,7 +83,6 @@ pub fn test(input: &str) -> f64 {
         };
     }
 
-    
     for (idx, ops) in operators.iter_mut().enumerate() {
         if ops.0 == OperatorSymbol::Sub {
             numbers[idx + 1] *= -1.0;
