@@ -5,7 +5,6 @@ pub enum ArithmeticError {
     Empty,
     IncompleteParsing(String, usize),
     InvalidToken(String),
-    MalformedExpression,
 }
 
 impl Display for ArithmeticError {
@@ -17,7 +16,6 @@ impl Display for ArithmeticError {
                 write!(f, "{}^", "-".repeat(*last_position + 1))
             }
             ArithmeticError::InvalidToken(token) => write!(f, "Invalid token: {token}"),
-            ArithmeticError::MalformedExpression => write!(f, "Expression is malformed."),
         }
     }
 }

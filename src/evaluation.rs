@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use crate::{errors::ArithmeticError, parsing::*};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum Operator {
     Add,
     Sub,
@@ -41,65 +41,46 @@ pub fn evaluate(expression: &Pair<Rule>) -> Result<f64> {
         .map(|operator| Operator::from_str(operator.as_str()))
         .collect::<Result<Vec<Operator>, _>>()?;
 
-    for (index, operator) in operators.iter_mut().enumerate() {
-        match operator {
-            Operator::Sub => {
-                let number = match numbers.get_mut(index + 1) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
+    operators
+        .iter_mut()
+        .enumerate()
+        .for_each(|(index, operator)| {
+            if *operator == Operator::Sub {
+                let number = numbers
+                    .get_mut(index + 1)
+                    .expect("Cannot be malformed as it was parsed.");
 
                 *operator = Operator::Add;
                 *number *= -1.0;
             }
-            _ => { /* NO-OP */ }
-        }
-    }
+        });
 
     let mut marker = Vec::new();
-    for (index, operator) in operators.iter_mut().enumerate() {
-        match operator {
-            Operator::Mul => {
-                let a = match numbers.get(index) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
+    operators
+        .iter_mut()
+        .enumerate()
+        .for_each(|(index, operator)| {
+            let pre_number = *numbers
+                .get(index)
+                .expect("Cannot be malformed as it was parsed.");
+            let number = numbers
+                .get_mut(index + 1)
+                .expect("Cannot be malformed as it was parsed.");
 
-                let b = match numbers.get(index + 1) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
-                let result = a * b;
-
-                let number = match numbers.get_mut(index + 1) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
-                *number = result;
-                marker.push(index);
+            match operator {
+                Operator::Mul => {
+                    let result = pre_number * *number;
+                    *number = result;
+                    marker.push(index);
+                }
+                Operator::Div => {
+                    let result = pre_number / *number;
+                    *number = result;
+                    marker.push(index);
+                }
+                _ => { /* NO-OP */ }
             }
-            Operator::Div => {
-                let a = match numbers.get(index) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
-
-                let b = match numbers.get(index + 1) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
-                let result = a / b;
-
-                let number = match numbers.get_mut(index + 1) {
-                    Some(num) => num,
-                    None => return Err(ArithmeticError::MalformedExpression.into()),
-                };
-                *number = result;
-                marker.push(index);
-            }
-            _ => { /* NO-OP */ }
-        }
-    }
+        });
 
     Ok(numbers
         .iter_mut()
