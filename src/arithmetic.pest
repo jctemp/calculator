@@ -1,0 +1,9 @@
+WHITESPACE = _{ " " }
+operator = { "+" | "-" | "*" | "/" }
+number = { '0'..'9' }
+sign = { "-"? }
+exponent = { number+ }
+fraction = { "." ~ number+ }
+
+float = @{ sign ~ exponent ~ fraction? }
+expression = { float ~ WHITESPACE* ~ (operator ~ WHITESPACE* ~ float ~ WHITESPACE*)* }
