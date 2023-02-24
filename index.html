@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-<body>
-
+    <link rel="stylesheet" href="./style.css">
     <script type="module">
         import init, * as wasm from "./pkg/arith_ops.js"
         await init();
@@ -18,6 +14,43 @@
 
         console.log(wasm.calculate(request).to_string());
     </script>
+    <title>Simple Calculator</title>
+</head>
+
+<body>
+
+    <div class="calculator">
+        <!-- DISPLAY -->
+        <div class="display">-3.5 - 5 * 7 - 2 + 3.5 * 3.5 / 4</div>
+
+        <!-- FIRST ROW -->
+        <button class="wide">clear</button>
+        <button class="wide">delete</button>
+
+        <!-- SECOND ROW -->
+        <button class="digit">7</button>
+        <button class="digit">8</button>
+        <button class="digit">9</button>
+        <button class="operator">/</button>
+
+        <!-- THIRD ROW -->
+        <button class="digit">4</button>
+        <button class="digit">5</button>
+        <button class="digit">6</button>
+        <button class="operator">*</button>
+
+        <!-- FOURTH ROW -->
+        <button class="digit">1</button>
+        <button class="digit">2</button>
+        <button class="digit">3</button>
+        <button class="operator">-</button>
+
+        <!-- FIVE ROW -->
+        <button class="special">.</button>
+        <button class="digit">0</button>
+        <button class="special">=</button>
+        <button class="operator">+</button>
+    </div>
 
 </body>
 
