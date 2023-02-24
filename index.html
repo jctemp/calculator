@@ -11,10 +11,12 @@
 <body>
 
     <script type="module">
-        import init, { test } from "./pkg/arith_ops.js"
+        import init, * as wasm from "./pkg/arith_ops.js"
         await init();
 
-        console.log(test("-3.5 + 5 * 7 - 2 + 3.5 * 3.5"));
+        let request = new wasm.ArithmeticRequest("-3.5 - 5 * 7 - 2 + 3.5 * 3.5 / 4")
+
+        console.log(wasm.calculate(request).to_string());
     </script>
 
 </body>

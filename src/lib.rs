@@ -1,105 +1,94 @@
-use pest::Parser;
-use pest_derive::Parser;
-use std::str::FromStr;
+mod errors;
+mod evaluation;
+mod parsing;
+
 use wasm_bindgen::prelude::*;
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
+use crate::{evaluation::*, parsing::*};
+
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-#[derive(Parser)]
-#[grammar = "arithmetic.pest"]
-pub struct ArithmeticParser;
-
-#[wasm_bindgen]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OperatorSymbol {
-    Add,
-    Sub,
-    Mul,
-    Div,
+#[derive(Debug, Clone, Copy)]
+pub enum Status {
+    SUCCESS,
+    FAILED,
 }
 
 #[wasm_bindgen]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Operator(OperatorSymbol, fn(f64, f64) -> f64);
+#[derive(Debug)]
+pub struct ArithmeticResponse {
+    result: f64,
+    message: String,
+    status: Status,
+}
 
-impl FromStr for Operator {
-    type Err = String;
+#[wasm_bindgen]
+impl ArithmeticResponse {
+    pub fn result(&self) -> f64 {
+        self.result
+    }
 
-    fn from_str(value: &str) -> Result<Self, Self::Err> {
-        match value {
-            "+" => Ok(Operator(OperatorSymbol::Add, |a, b| a + b)),
-            "-" => Ok(Operator(OperatorSymbol::Sub, |a, b| a - b)),
-            "*" => Ok(Operator(OperatorSymbol::Mul, |a, b| a * b)),
-            "/" => Ok(Operator(OperatorSymbol::Div, |a, b| a / b)),
-            _ => Err(format!("Operator '{}' is not supported.", value)),
-        }
+    pub fn message(&self) -> String {
+        self.message.to_owned()
+    }
+
+    pub fn status(&self) -> Status {
+        self.status
+    }
+
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }
 
 #[wasm_bindgen]
-pub fn test(input: &str) -> f64 {
+#[derive(Debug)]
+pub struct ArithmeticRequest {
+    expression: String,
+}
+
+#[wasm_bindgen]
+impl ArithmeticRequest {
+    #[wasm_bindgen(constructor)]
+    pub fn new(expression: String) -> Self {
+        ArithmeticRequest { expression }
+    }
+}
+
+#[wasm_bindgen]
+pub fn calculate(request: ArithmeticRequest) -> ArithmeticResponse {
     wasm_logger::init(wasm_logger::Config::default());
-    log::info!("Hi, mom!");
 
-    let expression = ArithmeticParser::parse(Rule::expression, input)
-        .expect("Expression should be parsable.")
-        .into_iter()
-        .next()
-        .expect("At least one expression should be contained in the parsed string.");
+    log::debug!("Request: {:#?}", request);
 
-    let mut numbers = Vec::new();
-    let mut operators = Vec::new();
-
-    for token in expression.into_inner() {
-        let operator = match operators.last() {
-            Some(&Operator(OperatorSymbol::Mul, _)) | Some(&Operator(OperatorSymbol::Div, _)) => {
-                operators.pop()
-            }
-            _ => None,
-        };
-
-        match token.as_rule() {
-            Rule::float => {
-                let number: f64 = token.as_str().parse().expect(
-                    "Parsed float should not fail as it has correct form. Maybe too large or so.",
-                );
-
-                if let Some(operator) = operator {
-                    let prev = numbers.pop().expect("Must have a predecessor.");
-                    numbers.push(operator.1(prev, number));
-                } else {
-                    numbers.push(number);
-                }
-            }
-            Rule::operator => {
-                operators.push(Operator::from_str(token.as_str()).unwrap());
-            }
-            _ => panic!("This should not happen."),
-        };
-    }
-
-    for (idx, ops) in operators.iter_mut().enumerate() {
-        if ops.0 == OperatorSymbol::Sub {
-            numbers[idx + 1] *= -1.0;
-            ops.0 = OperatorSymbol::Add;
-            ops.1 = |a, b| a + b;
+    let pair = match parse(&request.expression) {
+        Ok(pair) => pair,
+        Err(e) => {
+            log::error!("{}", e);
+            return ArithmeticResponse {
+                result: f64::NAN,
+                message: format!("{}", e),
+                status: Status::FAILED,
+            };
         }
-    }
+    };
 
-    let mut ops = String::new();
-    let mut numbers = numbers;
-    let mut operators = operators;
-    while let Some(op) = operators.pop() {
-        let b = numbers.pop().unwrap();
-        let a = numbers.pop().unwrap();
-        ops += &format!("\n{:?} {:?} {:?}", a, op.0, b);
-        numbers.push(op.1(a, b));
-    }
+    log::debug!("Parsed: {:#?}, {:#?}", pair.as_rule(), pair.as_span());
 
-    numbers[0]
+    let (result, message, status) = match evaluate(&pair) {
+        Ok(result) => (result, String::new(), Status::SUCCESS),
+        Err(e) => {
+            log::error!("{}", e);
+            (f64::NAN, format!("{}", e), Status::FAILED)
+        }
+    };
+
+    ArithmeticResponse {
+        result: result,
+        message: message,
+        status: status,
+    }
 }
