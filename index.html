@@ -6,14 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
-    <script type="module">
-        import init, * as wasm from "./pkg/arith_ops.js"
-        await init();
-
-        let request = new wasm.ArithmeticRequest("-3.5 - 5 * 7 - 2 + 3.5 * 3.5 / 4")
-
-        console.log(wasm.calculate(request).to_string());
-    </script>
+    <script type="module" src="./main.js"></script>
     <title>Simple Calculator</title>
 </head>
 
@@ -21,35 +14,35 @@
 
     <div class="calculator">
         <!-- DISPLAY -->
-        <div class="display">-3.5 - 5 * 7 - 2 + 3.5 * 3.5 / 4</div>
+        <div class="display"></div>
 
         <!-- FIRST ROW -->
-        <button class="wide">clear</button>
-        <button class="wide">delete</button>
+        <button value="c" class="wide">clear</button>
+        <button value="d" class="wide">delete</button>
 
         <!-- SECOND ROW -->
-        <button class="digit">7</button>
-        <button class="digit">8</button>
-        <button class="digit">9</button>
-        <button class="operator">/</button>
+        <button value="7" class="digit">7</button>
+        <button value="8" class="digit">8</button>
+        <button value="9" class="digit">9</button>
+        <button value="/" class="operator">/</button>
 
         <!-- THIRD ROW -->
-        <button class="digit">4</button>
-        <button class="digit">5</button>
-        <button class="digit">6</button>
-        <button class="operator">*</button>
+        <button value="4" class="digit">4</button>
+        <button value="5" class="digit">5</button>
+        <button value="6" class="digit">6</button>
+        <button value="*" class="operator">*</button>
 
         <!-- FOURTH ROW -->
-        <button class="digit">1</button>
-        <button class="digit">2</button>
-        <button class="digit">3</button>
-        <button class="operator">-</button>
+        <button value="1" class="digit">1</button>
+        <button value="2" class="digit">2</button>
+        <button value="3" class="digit">3</button>
+        <button value="-" class="operator">-</button>
 
         <!-- FIVE ROW -->
-        <button class="special">.</button>
-        <button class="digit">0</button>
-        <button class="special">=</button>
-        <button class="operator">+</button>
+        <button value="." class="special">.</button>
+        <button value="0" class="digit">0</button>
+        <button value="=" class="special">=</button>
+        <button value="+" class="operator">+</button>
     </div>
 
 </body>
