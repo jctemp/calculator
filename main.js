@@ -3,7 +3,7 @@ await init();
 
 let builder = new wasm.ExpressionBuilder();
 let display = document.querySelector(".display");
-wasm.enable_logging();
+// wasm.enable_logging();
 
 document.querySelectorAll("button").forEach(btn => {
     if (btn.classList.contains("special") && btn.value == "=" || btn.classList.contains("wide")) {
