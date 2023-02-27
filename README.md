@@ -1,6 +1,8 @@
 # calculator
 
-TODO
+The task was to create a simple calculator, which can do the basic operations (+,-,*,/).
+It encompasses all the learned skills of basic HTML, CSS and JavaScript.
+I extended the exploration by working with Rust and `wasm`.
 
 ## Lessons learned
 
